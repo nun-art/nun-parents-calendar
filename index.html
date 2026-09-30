@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Nün Academy family calendar: find upcoming school events, parent meetings and holidays, and add the school calendar to your own.">
+  <meta name="description" content="Nün Academy family calendar: upcoming events, school holidays and parent meetings, with searchable event cards and the live school calendar.">
   <meta name="theme-color" content="#18375e">
   <title>Nün Parents Events Calendar</title>
   <style>
@@ -51,12 +51,12 @@
     main { padding: 25px 0 56px; }
     .sync-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; }
     .text-button { border: 0; color: var(--navy); background: none; padding: 10px 4px; font-size: 13px; font-weight: 700; min-height: 44px; }
-    .notice { padding: 17px 20px; border: 1px solid #d5bd9d; border-radius: 12px; background: #fcf4e8; color: #604725; margin: 18px 0; font-size: 14px; }
+    .notice { padding: 16px 20px; border: 1px solid #d5bd9d; border-radius: 12px; background: #fcf4e8; color: #604725; margin: 18px 0; font-size: 13px; }
     .notice strong { display: block; margin-bottom: 5px; }
     .notice p { margin: 0; }
     .notice details { margin-top: 10px; }
     .notice summary { cursor: pointer; font-weight: 650; }
-    .section-head { display: flex; justify-content: space-between; align-items: end; gap: 18px; margin: 25px 0 17px; }
+    .section-head { display: flex; justify-content: space-between; align-items: end; gap: 18px; margin: 28px 0 17px; }
     h2 { margin: 0; font-size: 26px; letter-spacing: -.025em; color: var(--navy); font-weight: 700; }
     .section-head p { margin: 3px 0 0; color: var(--muted); font-size: 14px; }
     .section-head a { font-size: 14px; font-weight: 650; white-space: nowrap; }
@@ -96,7 +96,7 @@
     iframe { width: 100%; height: 650px; border: 0; display: block; }
     .help { margin-top: 28px; border: 1px solid var(--border); padding: 17px 21px; border-radius: 12px; background: white; font-size: 14px; }
     .help summary { cursor: pointer; color: var(--navy); font-weight: 700; min-height: 28px; }
-    .help p { color: var(--muted); }
+    .help p, .source-note { color: var(--muted); }
     footer { padding: 27px 0; background: var(--deep); color: #dee5ee; font-size: 12px; }
     footer .wrap { display: flex; gap: 20px; justify-content: space-between; flex-wrap: wrap; }
     footer a { color: #e9d0b5; }
@@ -108,7 +108,6 @@
     .dialog-body { padding: 23px 24px; }
     .description { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; border-top: 1px solid var(--border); margin-top: 17px; padding-top: 17px; }
     .dialog-body .buttons { margin-top: 20px; }
-    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
     @media (max-width: 900px) {
       .hero-inner { gap: 25px; }
       .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -133,6 +132,8 @@
     }
     @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
   </style>
+  <script src="./semester-one.js?v=20260930" defer></script>
+  <script src="./parent-ui.js?v=20260930-document" defer></script>
 </head>
 <body>
   <a class="skip" href="#browse">Skip to events</a>
@@ -147,198 +148,46 @@
       <div><div class="eyebrow">Nün Academy · For our families</div><h1>Parents Events<br>Calendar</h1><p class="lead">The dates that matter to your family. Find school events, plan ahead, and keep your own calendar up to date.</p></div>
       <div class="subscribe-panel">
         <strong>Keep Nün in your calendar</strong>
-        <div class="buttons"><a id="subscribe" class="button gold" target="_blank" rel="noopener">Add to Google Calendar</a><a id="download" class="button hero-outline">Download .ics</a></div>
-        <p class="tiny">Subscribe for future changes. A downloaded file is a one-time copy. <a href="#calendar-help" style="color:inherit">Which option should I use?</a></p>
+        <div class="buttons"><a id="subscribe" class="button gold" target="_blank" rel="noopener">Add to Google Calendar</a><a id="download" class="button hero-outline">Download Semester 1 (.ics)</a></div>
+        <p class="tiny">A download saves a one-time copy. A subscription follows the school’s Google Calendar. <a href="#calendar-help" style="color:inherit">Help with adding the calendar</a></p>
       </div>
     </div>
   </section>
   <main class="wrap">
-    <div class="sync-row"><span id="sync-status" role="status">Checking school calendar…</span><button type="button" class="text-button" id="refresh">Refresh events ↻</button></div>
+    <div class="sync-row"><span id="sync-status" role="status">Loading the school schedule…</span><button type="button" class="text-button" id="refresh">Refresh events ↻</button></div>
     <div class="notice" id="feed-notice" role="status" hidden></div>
     <section aria-labelledby="upcoming-heading">
       <div class="section-head"><div><h2 id="upcoming-heading">Coming up next</h2><p>Upcoming and ongoing events at a glance.</p></div><a href="#browse">Browse all ↓</a></div>
-      <div id="upcoming" class="cards"><div class="empty">Checking upcoming events…</div></div>
+      <div id="upcoming" class="cards"><div class="empty">Loading upcoming events…</div></div>
     </section>
     <section id="browse" aria-labelledby="browse-heading">
-      <div class="section-head"><div><h2 id="browse-heading">Find your events</h2><p>Search by event, year group or location.</p></div></div>
+      <div class="section-head"><div><h2 id="browse-heading">Find your events</h2><p>Choose a semester, search a year group, or select what matters to your family.</p></div></div>
       <div class="controls">
         <div class="periods" role="group" aria-label="Semester"><button type="button" class="tab" data-sem="all" aria-pressed="true">Whole school year</button><button type="button" class="tab" data-sem="s1" aria-pressed="false">Semester 1</button><button type="button" class="tab" data-sem="s2" aria-pressed="false">Semester 2</button></div>
         <div class="search-row"><div class="field"><label for="search">Search events</label><input id="search" type="search" placeholder="Try coffee morning, Year 9, sports…" autocomplete="off"></div><div class="field"><label for="month">Month</label><select id="month"><option value="all">Any month</option></select></div></div>
         <div class="filters" role="group" aria-label="Event category"><button type="button" class="chip" data-filter="all" aria-pressed="true">All events</button><button type="button" class="chip" data-filter="parents" aria-pressed="false">Parents</button><button type="button" class="chip" data-filter="students" aria-pressed="false">Students</button><button type="button" class="chip" data-filter="holidays" aria-pressed="false">Holidays</button><button type="button" class="chip" data-filter="school" aria-pressed="false">School activities</button></div>
       </div>
       <div class="results-row"><span id="result-count" role="status">Loading events…</span><label class="check"><input id="show-past" type="checkbox">Include past events</label><button id="reset" type="button" class="text-button">Clear filters</button></div>
-      <div id="events" class="cards"><div class="empty">Checking published event details…</div></div>
+      <div id="events" class="cards"><div class="empty">Loading the school schedule…</div></div>
       <div class="load-row"><button type="button" class="button outline" id="more" hidden>Show more events</button></div>
     </section>
     <section id="full-calendar" aria-labelledby="calendar-heading">
-      <div class="section-head"><div><h2 id="calendar-heading">Full live calendar</h2><p>The original Google Calendar, for the complete view.</p></div><a id="open-calendar" target="_blank" rel="noopener">Open ↗</a></div>
+      <div class="section-head"><div><h2 id="calendar-heading">Full live calendar</h2><p>The school’s original Google Calendar, in one place.</p></div><a id="open-calendar" target="_blank" rel="noopener">Open ↗</a></div>
       <div class="calendar-box"><iframe id="calendar-frame" title="Nün Academy live Google Calendar" loading="lazy"></iframe></div>
-      <p class="tiny" style="color:var(--muted)">All event times are shown in Saudi Arabia time (Riyadh, GMT+3). The filters above apply to the event cards, not this Google Calendar view.</p>
+      <p class="tiny source-note">All times are shown in Saudi Arabia time (Riyadh, GMT+3). The filters above apply to the cards, not this Google Calendar. Google’s sharing settings control which details visitors can see.</p>
     </section>
-    <details class="help" id="calendar-help"><summary>Add the calendar to your phone or laptop</summary><p><strong>Google Calendar:</strong> use “Add to Google Calendar” and confirm the subscription. Changes remain managed by the school.</p><p><strong>Apple Calendar or Outlook:</strong> subscribe using the calendar feed address for future updates. You can also download the .ics file and import it as a one-time copy. Import steps depend on your calendar application; Google Calendar file imports are done on a computer.</p><div class="buttons"><a id="apple-subscribe" class="button outline">Subscribe in Apple Calendar</a><button id="copy-feed" type="button" class="button outline">Copy subscription address</button></div><p class="tiny" id="copy-status" role="status">Subscriptions may take time to refresh. Downloaded copies do not update automatically.</p></details>
-    <p class="tiny" style="color:var(--muted);margin-top:24px">Dates and events are subject to change. Please check official Nün Academy communications for important updates and individual meeting invitations.</p>
-    <noscript><div class="notice">Please enable JavaScript to use search and filters. You can still open the school Google Calendar.</div></noscript>
+    <details class="help" id="calendar-help">
+      <summary>Add the calendar to your phone or laptop</summary>
+      <p><strong>Save a copy:</strong> use the download button to save the events displayed by this page’s current data source as an .ics calendar file. Open or import that file in a compatible calendar application. Search filters do not limit this full download. Downloaded copies do not receive future changes.</p>
+      <p><strong>Google Calendar:</strong> use “Add to Google Calendar” and confirm the school calendar subscription. Google Calendar file imports are done on a computer; subscribed calendars can also be displayed in the phone app.</p>
+      <p><strong>Apple Calendar or Outlook:</strong> subscribe to the school calendar using its feed address, or import the .ics file as a one-time copy. Subscriptions may take time to refresh. If the school’s Google Calendar is sharing availability only, the subscription may show “Busy” until event details are made available.</p>
+      <div class="buttons"><a id="apple-subscribe" class="button outline">Subscribe in Apple Calendar</a><button id="copy-feed" type="button" class="button outline">Copy subscription address</button></div>
+      <p class="tiny" id="copy-status" role="status">Downloading a document-based event does not create or edit an event in the school’s master calendar.</p>
+    </details>
+    <p class="tiny source-note" style="margin-top:24px">Dates and events are subject to change. Please check official Nün Academy communications for updates, invitations and individual meeting details.</p>
+    <noscript><div class="notice">JavaScript is needed for search, event cards and downloads. Please open Google Calendar or contact the school for the latest schedule.</div></noscript>
   </main>
   <footer><div class="wrap"><span>Nün Academy · Kunskapsskolan, Jeddah</span><a href="https://www.nunacademy.com" target="_blank" rel="noopener">School website ↗</a></div></footer>
   <dialog id="event-dialog" aria-labelledby="event-title"><div class="dialog-head"><h2 id="event-title"></h2><button id="close-dialog" type="button" class="close" aria-label="Close event details">×</button></div><div id="event-body" class="dialog-body"></div></dialog>
-  <script>
-    'use strict';
-    const CALENDAR_ID = 'c_de33ef4171ba5b6f2b53f141f01f626b06bc435d997772736afcef09507880e6@group.calendar.google.com';
-    const CALENDAR_LINK = 'https://calendar.google.com/calendar/u/0?cid=' + btoa(CALENDAR_ID);
-    const FEED = 'https://calendar.google.com/calendar/ical/' + encodeURIComponent(CALENDAR_ID) + '/public/basic.ics';
-    const SNAPSHOT = 'https://raw.githubusercontent.com/nun-art/nun-parents-calendar/main/calendar-data.json';
-    const TZ = 'Asia/Riyadh';
-    const $ = id => document.getElementById(id);
-    const state = { events: [], semester: 'all', category: 'all', query: '', month: 'all', past: false, limit: 12, restricted: 0, loading: true, failed: false };
-    $('subscribe').href = CALENDAR_LINK;
-    $('open-calendar').href = CALENDAR_LINK;
-    $('download').href = FEED;
-    $('apple-subscribe').href = FEED.replace('https:', 'webcal:');
-    $('calendar-frame').src = 'https://calendar.google.com/calendar/embed?' + new URLSearchParams({src: CALENDAR_ID, ctz: TZ, mode: 'AGENDA', showTitle: '0', showPrint: '0', showCalendars: '0', showTz: '0', bgcolor: '#ffffff'});
-    const logo = $('school-logo');
-    logo.addEventListener('error', () => {
-      if (!logo.dataset.fallback) { logo.dataset.fallback = 'true'; logo.src = './nun-logo.svg'; }
-    });
-    const normalize = text => String(text || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\byear\s*(\d+)/g, 'y$1').replace(/[^a-z0-9\u0600-\u06ff]+/g, ' ').trim();
-    const textNode = (tag, text, cls) => { const node = document.createElement(tag); if (cls) node.className = cls; node.textContent = text; return node; };
-    const parseDate = value => new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? value + 'T00:00:00+03:00' : value);
-    const formatDate = value => parseDate(value).toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric', timeZone: TZ});
-    const formatTime = value => parseDate(value).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', timeZone: TZ});
-    function ongoing(e) { return parseDate(e.start) <= new Date() && parseDate(e.end) > new Date(); }
-    function upcoming(e) { return parseDate(e.end) > new Date() || parseDate(e.start) >= new Date(); }
-    function dateLabel(e) {
-      const last = e.allDay ? new Date(parseDate(e.end).getTime() - 86400000) : parseDate(e.end);
-      const finalDay = last.toLocaleDateString('en-CA', {timeZone: TZ});
-      return e.startDay === finalDay ? formatDate(e.start) : formatDate(e.start) + ' – ' + formatDate(last.toISOString());
-    }
-    function timeLabel(e) {
-      if (!e.allDay) return formatTime(e.start) + ' – ' + formatTime(e.end);
-      if (e.categories.includes('holidays')) return 'No school · all day';
-      if (/goal setting|development discussions/i.test(e.title)) return 'Individual scheduled meetings';
-      return 'All-day entry · check details for timing';
-    }
-    function categories(e) {
-      const title = normalize(e.title);
-      const body = normalize((e.description || '').replace(/dear\s+n[uü]n\s+parents[,:]?/ig, ''));
-      const combined = title + ' ' + body;
-      const result = new Set();
-      if (/\bholiday\b|\bbreak\b|school closed/.test(title)) result.add('holidays');
-      if (/parent|open house|coffee morning|forum|goal setting|development discussion|options evening|class representative|class reps/.test(title) || /parents are .{0,15}invited|parents attend|audience.{0,25}parents|students and parents/.test(body)) result.add('parents');
-      if (!result.has('holidays') && /student|first day|sports|athletics|trip|exam|mock|book week|science fair|celebration|assembly|competition|talent|promotion|graduation/.test(combined)) result.add('students');
-      if (!result.size) result.add('school');
-      return [...result];
-    }
-    const label = key => ({parents: 'Parents', students: 'Students', holidays: 'No school', school: 'School activity'})[key];
-    function card(e) {
-      const article = document.createElement('article'); article.className = 'card';
-      const top = textNode('div', '', 'card-top');
-      const tile = textNode('div', '', 'date-tile');
-      const start = parseDate(e.start);
-      tile.append(textNode('span', start.toLocaleDateString('en-GB', {month: 'short', timeZone: TZ})), textNode('b', start.toLocaleDateString('en-GB', {day: 'numeric', timeZone: TZ})));
-      const tags = textNode('div', '', 'badges');
-      for (const category of e.categories) tags.append(textNode('span', label(category), 'badge ' + category));
-      if (e.status === 'tentative' || /tentative event|tentative/i.test(e.description)) tags.append(textNode('span', 'Tentative', 'badge notice-badge'));
-      if (ongoing(e)) tags.append(textNode('span', 'Ongoing', 'badge notice-badge'));
-      top.append(tile, tags);
-      const body = textNode('div', '', 'card-body');
-      body.append(textNode('h3', e.title), textNode('p', dateLabel(e), 'info'), textNode('p', timeLabel(e), 'info'));
-      body.append(textNode('p', /^https?:\/\//.test(e.location) ? 'Online · joining link in details' : (e.location || 'Location not specified'), 'info'));
-      const audience = (e.description || '').match(/Audience\s*:\s*([^\n]+)/i);
-      if (audience) body.append(textNode('p', audience[1], 'info'));
-      if (/early dismissal/i.test(e.description)) body.append(textNode('p', 'Early dismissal · see pickup details', 'brief'));
-      const foot = textNode('div', '', 'card-foot');
-      const button = textNode('button', 'View details →'); button.type = 'button'; button.setAttribute('aria-label', 'View details: ' + e.title); button.addEventListener('click', () => openEvent(e));
-      foot.append(button, textNode('span', e.semester === 's2' ? 'Semester 2' : 'Semester 1'));
-      article.append(top, body, foot); return article;
-    }
-    function empty(target, message) { target.replaceChildren(textNode('div', message, 'empty')); }
-    function filtered() {
-      const words = normalize(state.query).split(' ').filter(Boolean);
-      return state.events.filter(e => (state.semester === 'all' || e.semester === state.semester) && (state.category === 'all' || e.categories.includes(state.category)) && (state.past || upcoming(e)) && (state.month === 'all' || e.startDay.slice(0, 7) <= state.month && e.endDay.slice(0, 7) >= state.month) && words.every(word => e.searchText.includes(word)));
-    }
-    function render() {
-      const found = filtered();
-      $('events').replaceChildren(...found.slice(0, state.limit).map(card));
-      if (!found.length) empty($('events'), state.loading ? 'Checking published events…' : state.failed ? 'Event details could not be loaded. Please open the live calendar below.' : state.restricted && !state.events.length ? 'Event names are not publicly visible yet. Search will be available when the school shares event details.' : 'No events match these filters. Try another category, or include past events.');
-      $('result-count').textContent = state.restricted && !state.events.length ? 'Event details not yet available' : found.length + (found.length === 1 ? ' event' : ' events') + (state.past ? ' found' : ' upcoming or ongoing');
-      $('more').hidden = found.length <= state.limit;
-      $('more').textContent = 'Show more (' + Math.max(0, found.length - state.limit) + ' remaining)';
-      const next = state.events.filter(upcoming).slice(0, 3);
-      $('upcoming').replaceChildren(...next.map(card));
-      if (!next.length) empty($('upcoming'), state.loading ? 'Checking upcoming events…' : state.restricted ? 'The school calendar is connected, but public event details are currently hidden.' : state.failed ? 'Please check the live calendar below while event cards are unavailable.' : 'No upcoming events have been published for this school year.');
-    }
-    function openEvent(e) {
-      $('event-title').textContent = e.title;
-      const body = $('event-body'); body.replaceChildren(textNode('p', dateLabel(e)), textNode('p', timeLabel(e) + ' · Riyadh time'));
-      if (e.location) body.append(textNode('p', e.location));
-      body.append(textNode('div', e.description || 'Further details have not been provided by the school.', 'description'));
-      const actions = textNode('div', '', 'buttons');
-      const eventId = e.uid.endsWith('@google.com') ? e.uid.slice(0, -11) : '';
-      const eventLink = eventId && /^[a-zA-Z0-9_-]+$/.test(eventId) ? 'https://calendar.google.com/calendar/event?eid=' + encodeURIComponent(btoa(eventId + ' ' + CALENDAR_ID)) : CALENDAR_LINK;
-      function link(title, url) { const a = textNode('a', title, 'button outline'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'; actions.append(a); }
-      link('Open in Google Calendar', eventLink);
-      const urls = [...new Set(((e.description || '') + ' ' + (e.location || '')).match(/https?:\/\/[^\s<>"']+/g) || [])];
-      for (let url of urls.slice(0, 5)) {
-        url = url.replace(/[),.;]+$/, '');
-        try { const parsed = new URL(url); if (!['http:', 'https:'].includes(parsed.protocol)) continue;
-          if (/(^|\.)(zoom\.us|meet\.google\.com|teams\.microsoft\.com)$/.test(parsed.hostname)) link('Join online meeting', url);
-          else if (/(^|\.)(forms\.gle|forms\.google\.com)$/.test(parsed.hostname) || parsed.hostname === 'docs.google.com' && parsed.pathname.startsWith('/forms/')) link('Open school form', url);
-        } catch (_) { /* Ignore malformed links in school descriptions. */ }
-      }
-      body.append(actions);
-      $('event-dialog').showModal();
-    }
-    $('close-dialog').addEventListener('click', () => $('event-dialog').close());
-    $('event-dialog').addEventListener('click', e => { if (e.target === $('event-dialog')) $('event-dialog').close(); });
-    function selectGroup(selector, key, value) { document.querySelectorAll(selector).forEach(button => button.setAttribute('aria-pressed', String(button.dataset[key] === value))); }
-    document.querySelectorAll('[data-sem]').forEach(button => button.addEventListener('click', () => { state.semester = button.dataset.sem; state.limit = 12; selectGroup('[data-sem]', 'sem', state.semester); render(); }));
-    document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => { state.category = button.dataset.filter; state.limit = 12; selectGroup('[data-filter]', 'filter', state.category); render(); }));
-    $('search').addEventListener('input', e => { state.query = e.target.value; state.limit = 12; render(); });
-    $('month').addEventListener('change', e => { state.month = e.target.value; state.limit = 12; render(); });
-    $('show-past').addEventListener('change', e => { state.past = e.target.checked; state.limit = 12; render(); });
-    $('more').addEventListener('click', () => { state.limit += 12; render(); });
-    $('reset').addEventListener('click', () => { Object.assign(state, {semester: 'all', category: 'all', query: '', month: 'all', past: false, limit: 12}); $('search').value = ''; $('month').value = 'all'; $('show-past').checked = false; selectGroup('[data-sem]', 'sem', 'all'); selectGroup('[data-filter]', 'filter', 'all'); render(); });
-    $('copy-feed').addEventListener('click', async () => { try { await navigator.clipboard.writeText(FEED); $('copy-status').textContent = 'Subscription address copied. Paste it into your calendar’s “Subscribe from web” option.'; } catch (_) { $('copy-status').textContent = 'Copy this subscription address: ' + FEED; } });
-    async function requestData(url) {
-      const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), 12000);
-      try { const response = await fetch(url + '?v=' + Date.now(), {cache: 'no-store', signal: controller.signal, credentials: 'omit'}); if (!response.ok) throw new Error('Calendar unavailable'); const data = await response.json(); if (!Array.isArray(data.events)) throw new Error('Invalid calendar data'); return data; } finally { clearTimeout(timer); }
-    }
-    let refreshing = false;
-    async function refresh() {
-      if (refreshing) return; refreshing = true; $('refresh').disabled = true;
-      try {
-        let data;
-        try { data = await requestData(SNAPSHOT); } catch (_) { data = await requestData('./calendar-data.json'); }
-        const valid = data.events.filter(e => e && typeof e.title === 'string' && e.start && e.end && !isNaN(parseDate(e.start)) && !isNaN(parseDate(e.end)) && e.status !== 'cancelled');
-        const isHidden = e => /^(busy|\(busy\)|private|occupied|unavailable)$/i.test(e.title.trim()) && !e.description;
-        state.restricted = valid.filter(isHidden).length;
-        state.events = valid.filter(e => !isHidden(e)).map(e => {
-          const item = {...e, location: e.location || '', description: e.description || '', startDay: e.startDay || e.start.slice(0, 10), endDay: e.endDay || e.end.slice(0, 10)};
-          item.categories = categories(item); item.searchText = normalize(item.title + ' ' + item.description + ' ' + item.location + ' ' + item.categories.join(' ')); return item;
-        }).sort((a, b) => parseDate(a.start) - parseDate(b.start));
-        state.loading = false; state.failed = Boolean(data.syncError);
-        const notice = $('feed-notice'); notice.replaceChildren(); notice.hidden = !(state.restricted || data.syncError);
-        if (state.restricted) {
-          notice.append(textNode('strong', 'The public calendar is hiding event details.'), textNode('p', 'Google is sharing availability only, not event names and information. This is why the searchable cards cannot yet show those events. The live calendar remains below.'));
-          const help = document.createElement('details'); help.append(textNode('summary', 'For the school calendar manager'));
-          help.append(textNode('p', 'In Google Calendar, open Settings → Nün Parents Events Calendar → Access permissions for events. Next to “Make available to public”, choose “See all event details”. Apply this only to the parents events calendar, never your personal calendar. Anyone can view details made public.'));
-          notice.append(help);
-        } else if (data.syncError) { notice.append(textNode('strong', 'The public calendar is not available.'), textNode('p', 'Please use the school’s official communication channels until calendar access is restored.')); }
-        const synced = data.lastSynced ? new Date(data.lastSynced) : null;
-        $('sync-status').textContent = synced && !isNaN(synced) ? 'Google Calendar · Last checked ' + synced.toLocaleString('en-GB', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: TZ}) + ' (Riyadh) · Checks scheduled every 30 minutes' : 'Calendar details are not currently available';
-        if (synced && Date.now() - synced.getTime() > 7200000) $('sync-status').textContent += ' · Refresh delayed';
-        const previous = state.month;
-        $('month').replaceChildren(new Option('Any month', 'all'));
-        const months = [...new Set(state.events.map(e => e.startDay.slice(0, 7)))].sort();
-        for (const month of months) $('month').add(new Option(parseDate(month + '-01').toLocaleDateString('en-GB', {month: 'long', year: 'numeric', timeZone: TZ}), month));
-        if (months.includes(previous)) $('month').value = previous; else state.month = 'all';
-        render();
-      } catch (_) { state.loading = false; state.failed = true; $('sync-status').textContent = 'Could not refresh event cards. Please check the full live calendar below.'; render(); }
-      finally { refreshing = false; $('refresh').disabled = false; }
-    }
-    $('refresh').addEventListener('click', refresh);
-    refresh();
-    setInterval(() => { if (!document.hidden) refresh(); }, 300000);
-  </script>
 </body>
 </html>
