@@ -3,7 +3,7 @@
   "calendarName": "Nün Parents Events Calendar | 2026–2027",
   "source": "https://calendar.google.com/calendar/ical/c_de33ef4171ba5b6f2b53f141f01f626b06bc435d997772736afcef09507880e6%40group.calendar.google.com/public/basic.ics",
   "timeZone": "Asia/Riyadh",
-  "lastSynced": "2026-09-30T13:53:40.688731+00:00",
+  "lastSynced": "2026-09-30T13:59:35.638638+00:00",
   "refreshMinutes": 30,
   "restrictedCount": 7,
   "events": [
@@ -20,7 +20,7 @@
       "startDay": "2026-09-03",
       "endDay": "2026-09-03",
       "semester": "s1",
-      "updated": "2026-09-30T16:53:40+03:00"
+      "updated": "2026-09-30T16:59:35+03:00"
     },
     {
       "id": "1dbdc49dda804dd6d635",
@@ -35,7 +35,7 @@
       "startDay": "2026-10-01",
       "endDay": "2026-10-01",
       "semester": "s1",
-      "updated": "2026-09-30T16:53:40+03:00"
+      "updated": "2026-09-30T16:59:35+03:00"
     },
     {
       "id": "bc9f08b0e65ea0c2ae93",
@@ -50,7 +50,7 @@
       "startDay": "2026-10-01",
       "endDay": "2026-10-01",
       "semester": "s1",
-      "updated": "2026-09-30T16:53:40+03:00"
+      "updated": "2026-09-30T16:59:35+03:00"
     },
     {
       "id": "3bed27e13ee16e07b4c4",
@@ -65,7 +65,7 @@
       "startDay": "2026-10-01",
       "endDay": "2026-10-01",
       "semester": "s1",
-      "updated": "2026-09-30T16:53:40+03:00"
+      "updated": "2026-09-30T16:59:35+03:00"
     },
     {
       "id": "f213874935f46886e219",
@@ -80,7 +80,7 @@
       "startDay": "2026-10-27",
       "endDay": "2026-10-27",
       "semester": "s1",
-      "updated": "2026-09-30T16:53:40+03:00"
+      "updated": "2026-09-30T16:59:35+03:00"
     },
     {
       "id": "45c0864332ed0f788df0",
@@ -95,7 +95,7 @@
       "startDay": "2026-10-29",
       "endDay": "2026-10-29",
       "semester": "s1",
-      "updated": "2026-09-30T16:53:40+03:00"
+      "updated": "2026-09-30T16:59:35+03:00"
     },
     {
       "id": "2d160115fd74f3450387",
@@ -110,7 +110,7 @@
       "startDay": "2027-01-27",
       "endDay": "2027-01-27",
       "semester": "s2",
-      "updated": "2026-09-30T16:53:40+03:00"
+      "updated": "2026-09-30T16:59:35+03:00"
     }
   ]
 }
