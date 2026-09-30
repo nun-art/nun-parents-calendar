@@ -1,9 +1,10 @@
 /* Source: Upcoming Events Semester 1 2026_2027.docx, supplied by Nün Academy.
-   These document dates are NOT represented as live Google Calendar data.
+   Class representative times and locations updated from the school's confirmation on 30 September 2026.
+   These school-published dates are NOT represented as live Google Calendar data.
    End dates below are inclusive; the export converts them to exclusive ends. */
 'use strict';
 window.NUN_SEMESTER_ONE_DOCUMENT = {
-  source: 'Upcoming Events Semester 1 2026/2027',
+  source: 'Upcoming Events Semester 1 2026/2027, with school-confirmed class representative details',
   loadedOn: '2026-09-30',
   events: [
     {id:'first-y4-y5',title:'First Day of School – Y4–Y5',date:'2026-08-23',audience:'Y4–Y5 students',categories:['students'],timeLabel:'School day · timing from school'},
@@ -14,7 +15,9 @@ window.NUN_SEMESTER_ONE_DOCUMENT = {
     {id:'national-celebration',title:'Saudi National Day Celebration',date:'2026-09-22',audience:'Students',categories:['students'],notes:'Students should wear Saudi traditional clothes.',timeLabel:'School activity · time not specified'},
     {id:'national-holiday',title:'Saudi National Day Holiday',date:'2026-09-23',lastDate:'2026-09-24',audience:'All students',categories:['holidays'],notes:'No school.',timeLabel:'No school · all day'},
     {id:'goal-setting',title:'Goal Setting – EY–Y13',date:'2026-09-27',lastDate:'2026-10-08',audience:'EY–Y13 parents and students',categories:['parents','students'],notes:'Students attend a regular school day.\nPrimary (EY–Y5): parents attend scheduled meetings in person.\nSecondary (Y6–Y13): parents attend scheduled meetings virtually or in person.\nRefer to your individual invitation for the meeting date, time and location.',timeLabel:'Individual scheduled meetings'},
-    {id:'class-reps',title:'Class Representatives Welcome',date:'2026-10-01',audience:'Class representatives',categories:['parents'],notes:'Invitations will be sent directly to class representatives.'},
+    {id:'class-reps-primary',title:'Class Representatives Welcome – Primary',date:'2026-10-01',startTime:'08:00',endTime:'09:00',audience:'Primary class representatives',categories:['parents'],location:'Girls Music Room, New Building, 2nd Floor',notes:'Welcome to our Primary class representatives.\nThursday, October 1, 2026 · 8:00–9:00 AM.\nInvitations will be sent directly to class representatives.\nTime and location confirmed by the school on 30 September 2026.'},
+    {id:'class-reps-gs',title:'Class Representatives Welcome – GS',date:'2026-10-01',startTime:'09:00',endTime:'10:00',audience:'GS class representatives',categories:['parents'],location:'Girls Music Room, New Building, 2nd Floor',notes:'Welcome to our GS class representatives.\nThursday, October 1, 2026 · 9:00–10:00 AM.\nInvitations will be sent directly to class representatives.\nTime and location confirmed by the school on 30 September 2026.'},
+    {id:'class-reps-bs',title:'Class Representatives Welcome – BS',date:'2026-10-01',startTime:'10:00',endTime:'11:00',audience:'BS class representatives',categories:['parents'],location:'Boys Art Room, New Building, 2nd Floor',notes:'Welcome to our BS class representatives.\nThursday, October 1, 2026 · 10:00–11:00 AM.\nInvitations will be sent directly to class representatives.\nTime and location confirmed by the school on 30 September 2026.'},
     {id:'cybersecurity',title:'National Cybersecurity Awareness Month Launch',date:'2026-10-04',categories:['school'],notes:'Awareness month launches on 4 October.'},
     {id:'teachers-day',title:'Teachers Day',date:'2026-10-05',categories:['school']},
     {id:'book-week',title:'Book Week',date:'2026-10-11',lastDate:'2026-10-14',audience:'Students',categories:['students'],notes:'Book Character Parade: Wednesday, 14 October 2026.\nStudents will wear book character costumes for the parade.',timeLabel:'School activities · timings from school'},
