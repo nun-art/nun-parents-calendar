@@ -15,6 +15,7 @@ server = ThreadingHTTPServer(('127.0.0.1', 8765), partial(SimpleHTTPRequestHandl
 threading.Thread(target=server.serve_forever, daemon=True).start()
 RAW = 'https://raw.githubusercontent.com/nun-art/nun-parents-calendar/main/calendar-data.json'
 PAGE = 'http://127.0.0.1:8765/index.html'
+DOCUMENT_COUNT = 31  # Original 29, replacing the generic representatives entry with three sessions.
 fixtures = [
     {'id': 'test-parent', 'uid': 'testparent@google.com', 'title': 'TEST ONLY Coffee Morning', 'description': 'Parents are invited. Audience: Primary Parents', 'location': 'Test hall', 'start': '2026-10-01T09:00:00+03:00', 'end': '2026-10-01T10:00:00+03:00', 'startDay': '2026-10-01', 'endDay': '2026-10-01', 'allDay': False, 'semester': 's1', 'status': 'confirmed'},
     {'id': 'test-break', 'uid': 'testbreak@google.com', 'title': 'TEST ONLY Mid-Semester Break', 'description': 'No school', 'location': '', 'start': '2026-10-15', 'end': '2026-10-26', 'startDay': '2026-10-15', 'endDay': '2026-10-26', 'allDay': True, 'semester': 's1', 'status': 'confirmed'},
@@ -23,6 +24,7 @@ fixtures = [
 ]
 payload = {'schema': 1, 'events': fixtures, 'lastSynced': datetime.now(timezone.utc).isoformat()}
 Path('test-results').mkdir(exist_ok=True)
+
 
 def check_download(page, count):
     with page.expect_download() as info:
@@ -38,6 +40,7 @@ def check_download(page, count):
     assert len({str(e['UID']) for e in events}) == count
     assert all('DTSTAMP' in e and 'DTEND' in e for e in events)
     return events
+
 
 try:
     with sync_playwright() as p:
@@ -95,6 +98,32 @@ try:
         expect(page.locator('#upcoming')).to_contain_text('Class Representatives Welcome')
         expect(page.locator('#upcoming')).to_contain_text('Ongoing')
         assert not page.locator('#events h3').filter(has_text='Busy').count()
+
+        # School-confirmed representative sessions: searchable, separate and precisely timed.
+        page.locator('#search').fill('class representatives')
+        expect(page.locator('#events .card')).to_have_count(3)
+        sessions = [
+            ('primary', 'Primary', '8:00 AM – 9:00 AM', 5, 'Girls Music Room, New Building, 2nd Floor'),
+            ('gs', 'GS', '9:00 AM – 10:00 AM', 6, 'Girls Music Room, New Building, 2nd Floor'),
+            ('bs', 'BS', '10:00 AM – 11:00 AM', 7, 'Boys Art Room, New Building, 2nd Floor'),
+        ]
+        for suffix, group, times, utc_hour, room in sessions:
+            session_card = page.locator('#events .card').filter(has=page.get_by_role('heading', name='Class Representatives Welcome – ' + group, exact=True))
+            expect(session_card).to_contain_text('1 Oct 2026')
+            expect(session_card).to_contain_text(times)
+            expect(session_card).to_contain_text(room)
+            session_card.get_by_role('button').click()
+            expect(page.locator('#event-body')).to_contain_text(room)
+            with page.expect_download() as one:
+                page.get_by_role('button', name='Download this event (.ics)').click()
+            exported = Calendar.from_ical(Path(one.value.path()).read_bytes()).walk('VEVENT')
+            assert len(exported) == 1
+            assert exported[0].decoded('DTSTART').isoformat() == f'2026-10-01T{utc_hour:02d}:00:00+00:00'
+            assert exported[0].decoded('DTEND').hour == utc_hour + 1
+            assert str(exported[0]['LOCATION']) == room
+            page.keyboard.press('Escape')
+        page.screenshot(path='test-results/class-representatives.png', full_page=True)
+        page.locator('#reset').click()
         page.locator('#search').fill('coffee')
         expect(page.locator('#events .card')).to_have_count(1)
         expect(page.locator('#events')).to_contain_text('18 Nov 2026')
@@ -107,12 +136,18 @@ try:
         page.keyboard.press('Escape')
         page.locator('#reset').click()
         page.locator('#show-past').check()
-        expect(page.locator('#result-count')).to_have_text('29 events found')
+        expect(page.locator('#result-count')).to_have_text(f'{DOCUMENT_COUNT} events found')
         while page.locator('#more').is_visible():
             page.locator('#more').click()
-        expect(page.locator('#events .card')).to_have_count(29)
-        downloads = check_download(page, 29)
+        expect(page.locator('#events .card')).to_have_count(DOCUMENT_COUNT)
+        downloads = check_download(page, DOCUMENT_COUNT)
         by_uid = {str(e['UID']): e for e in downloads}
+        assert 'nun-document-class-reps@nunacademy.com' not in by_uid, 'Generic placeholder must not be duplicated'
+        for suffix, group, times, utc_hour, room in sessions:
+            event = by_uid['nun-document-class-reps-' + suffix + '@nunacademy.com']
+            assert event.decoded('DTSTART').isoformat() == f'2026-10-01T{utc_hour:02d}:00:00+00:00'
+            assert event.decoded('DTEND').hour == utc_hour + 1
+            assert str(event['LOCATION']) == room
         open_house = by_uid['nun-document-open-primary@nunacademy.com']
         assert open_house.decoded('DTSTART').hour == 13, '4 PM Riyadh = 13:00 UTC'
         assert open_house.decoded('DTEND').hour == 15
@@ -138,7 +173,7 @@ try:
         page.set_viewport_size({'width': 390, 'height': 844})
         assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth + 1'), 'Mobile layout overflows'
         assert page.locator('#school-logo').evaluate('(img) => img.naturalWidth === 603')
-        check_download(page, 29)
+        check_download(page, DOCUMENT_COUNT)
         page.screenshot(path='test-results/mobile-document-cards.png', full_page=True)
 
         # No network access to the data feeds: cards and downloads still work.
@@ -151,7 +186,7 @@ try:
         expect(page.locator('#events .card')).to_have_count(1)
         expect(page.locator('#feed-notice')).to_contain_text('not live updates')
         assert not errors, errors
-        print('PASS: exact school logo; all 29 document events; upcoming/ongoing cards; search including year ranges; audience, semester and month filters; event details; desktop/mobile layout; full and individual ICS downloads; timed and multi-day dates; restricted-feed and network-failure fallback; no JavaScript errors.')
+        print('PASS: exact school logo; all 31 school-published events; Primary, GS and BS cards with exact rooms and UTC-adjusted full/individual ICS exports; upcoming/ongoing cards; search; filters; desktop/mobile layout; restricted-feed and network-failure fallback; no JavaScript errors.')
         browser.close()
 finally:
     server.shutdown()
