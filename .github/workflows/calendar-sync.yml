@@ -2,7 +2,11 @@ name: Refresh parent calendar cards
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/calendar-sync.yml']
+    paths:
+      - '.github/workflows/calendar-sync.yml'
+      - 'sync_calendar.py'
+      - 'index.html'
+      - 'test_calendar.py'
   schedule:
     - cron: '17,47 * * * *'
   workflow_dispatch:
@@ -14,7 +18,7 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,106 +28,32 @@ jobs:
           python-version: '3.12'
       - name: Install calendar readers
         run: python -m pip install 'icalendar==6.3.2' 'recurring-ical-events==3.5.1'
-      - name: Fetch public school calendar and build safe card data
-        run: |
-          python - <<'PY'
-          import base64, hashlib, html, json, re, time
-          from datetime import date, datetime, timedelta, timezone
-          from pathlib import Path
-          from urllib.request import Request, urlopen
-          from urllib.parse import quote
-          from zoneinfo import ZoneInfo
-          from html.parser import HTMLParser
-          from icalendar import Calendar, Event
-          import recurring_ical_events
-
-          CAL = 'c_de33ef4171ba5b6f2b53f141f01f626b06bc435d997772736afcef09507880e6@group.calendar.google.com'
-          URL = 'https://calendar.google.com/calendar/ical/' + quote(CAL, safe='') + '/public/basic.ics'
-          TZ = ZoneInfo('Asia/Riyadh')
-          # Only this already-public parents calendar is read; never personal calendars.
-          for attempt in range(3):
-              try:
-                  with urlopen(Request(URL, headers={'User-Agent': 'NunParentsCalendar/1.0', 'Origin': 'https://nun-art.github.io'}), timeout=40) as response:
-                      body = response.read(5000001)
-                      print('Public feed HTTP:', response.status, 'CORS:', response.headers.get('Access-Control-Allow-Origin', '(not supplied)'))
-                  if len(body) > 5000000 or b'BEGIN:VCALENDAR' not in body:
-                      raise ValueError('No valid public iCalendar feed; previous snapshot retained.')
-                  cal = Calendar.from_ical(body)
-                  break
-              except Exception:
-                  if attempt == 2: raise
-                  time.sleep(3 * (attempt + 1))
-
-          class TextOnly(HTMLParser):
-              def __init__(self):
-                  super().__init__(convert_charrefs=True)
-                  self.parts = []
-                  self.skip = 0
-              def handle_starttag(self, tag, attrs):
-                  if tag in ('script', 'style'): self.skip += 1
-                  if not self.skip and tag in ('br', 'p', 'div', 'li'): self.parts.append('\n')
-                  if not self.skip and tag == 'a':
-                      href = dict(attrs).get('href', '')
-                      if href.startswith(('https://', 'http://')): self.parts.append(' ' + href + ' ')
-              def handle_endtag(self, tag):
-                  if tag in ('script', 'style') and self.skip: self.skip -= 1
-                  if not self.skip and tag in ('p', 'div', 'li'): self.parts.append('\n')
-              def handle_data(self, data):
-                  if not self.skip: self.parts.append(data)
-          def plain(value):
-              text = str(value or '')
-              if re.search(r'</?(?:p|div|br|span|a|b|strong|ul|li|script|style)\b', text, re.I):
-                  parser = TextOnly(); parser.feed(text); text = ''.join(parser.parts)
-              return html.unescape(text).replace('**', '').strip()
-          def zoned(d):
-              if isinstance(d, datetime): return (d if d.tzinfo else d.replace(tzinfo=TZ)).astimezone(TZ)
-              return datetime.combine(d, datetime.min.time(), TZ)
-          output = []
-          for e in recurring_ical_events.of(cal).between((2026, 8, 1), (2027, 8, 1)):
-              if str(e.get('STATUS', '')).upper() == 'CANCELLED' or str(e.get('CLASS', '')).upper() in ('PRIVATE', 'CONFIDENTIAL'):
-                  continue
-              start = e.decoded('DTSTART')
-              all_day = not isinstance(start, datetime)
-              end = e.decoded('DTEND', start + (timedelta(days=1) if all_day else timedelta(0)))
-              uid = str(e.get('UID', ''))
-              desc = plain(e.get('DESCRIPTION', ''))
-              title = plain(e.get('SUMMARY', 'School event'))
-              location = plain(e.get('LOCATION', ''))
-              identity = uid + '|' + start.isoformat()
-              item = {
-                  'id': hashlib.sha256(identity.encode()).hexdigest()[:20],
-                  'uid': uid, 'title': title, 'description': desc, 'location': location,
-                  'start': start.isoformat() if all_day else zoned(start).isoformat(),
-                  'end': end.isoformat() if all_day else zoned(end).isoformat(),
-                  'allDay': all_day, 'status': str(e.get('STATUS', 'CONFIRMED')).lower(),
-                  'startDay': zoned(start).date().isoformat(),
-                  'endDay': zoned(end).date().isoformat(),
-                  'semester': 's2' if zoned(start).date() >= date(2027, 1, 18) else 's1'
-              }
-              for key in ('LAST-MODIFIED', 'DTSTAMP'):
-                  if key in e:
-                      item['updated'] = zoned(e.decoded(key)).isoformat(); break
-              output.append(item)
-          output.sort(key=lambda e: (e['startDay'], e['start'], e['title']))
-          payload = {'schema': 1, 'calendarName': str(cal.get('X-WR-CALNAME', 'Nun Parents Events Calendar')), 'source': URL, 'timeZone': 'Asia/Riyadh', 'lastSynced': datetime.now(timezone.utc).isoformat(), 'refreshMinutes': 30, 'events': output}
-          Path('calendar-data.json').write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-          # Preserve the actual school-provided logo already present in the site.
-          if not Path('nun-logo.svg').exists():
-              original = Path('index.html').read_text(encoding='utf-8')
-              match = re.search(r'data:image/jpeg;base64,([A-Za-z0-9+/=]+)', original)
-              if match:
-                  data = match.group(0)
-                  Path('nun-logo.svg').write_text('<svg xmlns="http://www.w3.org/2000/svg" width="603" height="193" viewBox="0 0 603 193"><image width="603" height="193" href="' + data + '"/></svg>', encoding='utf-8')
-          print('Published card records:', len(output))
-          PY
-      - name: Save refreshed public data
+      - name: Refresh public calendar and restore logo
+        run: python sync_calendar.py
+      - name: Save public data and school logo
         run: |
           git config user.name 'Nün Calendar Sync'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add calendar-data.json
-          if test -f nun-logo.svg; then git add nun-logo.svg; fi
+          if test -f nun-logo.jpg; then git add nun-logo.jpg; fi
           if ! git diff --cached --quiet; then
-            git commit -m 'Refresh public Google Calendar data'
+            git commit -m 'Refresh public Google Calendar data and school logo'
             git pull --rebase origin main
             git push origin HEAD:main
           fi
+      - name: Install browser for interface checks
+        if: github.event_name != 'schedule'
+        run: |
+          python -m pip install 'playwright==1.55.0'
+          python -m playwright install --with-deps chromium
+      - name: Check search, logo, mobile layout and calendar cards
+        if: github.event_name != 'schedule'
+        run: python test_calendar.py
+      - name: Save browser check screenshots
+        if: always() && github.event_name != 'schedule'
+        uses: actions/upload-artifact@v4
+        with:
+          name: parent-calendar-browser-checks
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
