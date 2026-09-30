@@ -1,0 +1,165 @@
+name: Update class representative event details
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/class-representative-details.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Put all three sessions in the existing event details
+        run: |
+          python - <<'PY'
+          import json, re
+          from pathlib import Path
+          source_path = Path('semester-one.js')
+          source = source_path.read_text(encoding='utf-8')
+          if 'class-reps-details-v1' in source:
+              print('Grouped event is already present.')
+              raise SystemExit(0)
+          pattern = r"^    \{id:'class-reps-(?:primary|gs|bs)'.*\},\n"
+          matches = list(re.finditer(pattern, source, re.M))
+          assert len(matches) == 3, 'Expected the three previously confirmed sessions; no other records will be changed.'
+          sessions = [
+              {'id':'class-reps-primary','group':'Primary','startTime':'08:00','endTime':'09:00','location':'Girls Music Room, New Building, 2nd Floor'},
+              {'id':'class-reps-gs','group':'GS','startTime':'09:00','endTime':'10:00','location':'Girls Music Room, New Building, 2nd Floor'},
+              {'id':'class-reps-bs','group':'BS','startTime':'10:00','endTime':'11:00','location':'Boys Art Room, New Building, 2nd Floor'}
+          ]
+          grouped = {
+              'id':'class-reps',
+              'title':'Class Representatives Welcome',
+              'date':'2026-10-01',
+              'startTime':'08:00', 'endTime':'11:00',
+              'audience':'Primary, GS and BS class representatives',
+              'categories':['parents'],
+              'timeLabel':'Primary 8:00–9:00 AM · GS 9:00–10:00 AM · BS 10:00–11:00 AM',
+              'location':'New Building, 2nd Floor · rooms listed in details',
+              'notes':'Thursday, October 1, 2026\nAll times are Saudi Arabia time.\n\nPRIMARY\n8:00–9:00 AM\nGirls Music Room, New Building, 2nd Floor\n\nGS\n9:00–10:00 AM\nGirls Music Room, New Building, 2nd Floor\n\nBS\n10:00–11:00 AM\nBoys Art Room, New Building, 2nd Floor\n\nPlease attend the session for your group. Invitations will be sent directly to class representatives.',
+              'sessions':sessions
+          }
+          first = matches[0].start()
+          source = re.sub(pattern, '', source, flags=re.M)
+          source = source[:first] + '    ' + json.dumps(grouped, ensure_ascii=False) + ',\n' + source[first:]
+          source = '// class-reps-details-v1: one card; all three confirmed sessions inside View details.\n' + source
+          source_path.write_text(source, encoding='utf-8')
+
+          # Retain the three accurately timed calendar downloads, even though
+          # parents see a single combined card and details panel.
+          ui_path = Path('parent-ui.js')
+          ui = ui_path.read_text(encoding='utf-8')
+          anchor = 'function icsText(items) {'
+          assert ui.count(anchor) == 1
+          helper = '''function expandDownloadSessions(items) {
+            return items.flatMap(e => !Array.isArray(e.sessions) || !e.sessions.length ? [e] : e.sessions.map(s => prepare({
+              ...e, sessions: undefined,
+              id: 'document-' + s.id,
+              uid: 'nun-document-' + s.id + '@nunacademy.com',
+              title: e.title + ' – ' + s.group,
+              audience: s.group + ' class representatives',
+              start: e.startDay + 'T' + s.startTime + ':00+03:00',
+              end: e.startDay + 'T' + s.endTime + ':00+03:00',
+              allDay: false, timeLabel: '', location: s.location,
+              description: s.group + ' class representatives session.\\n' + s.location + '\\nInvitations will be sent directly to class representatives.'
+            })));
+          }
+          '''
+          ui = ui.replace(anchor, helper + anchor)
+          start = ui.index(anchor)
+          head, tail = ui[:start], ui[start:]
+          assert 'for (const e of items) {' in tail
+          tail = tail.replace('for (const e of items) {', 'for (const e of expandDownloadSessions(items)) {', 1)
+          ui_path.write_text(head + tail, encoding='utf-8')
+
+          index_path = Path('index.html')
+          page = index_path.read_text(encoding='utf-8')
+          page, n1 = re.subn(r'(semester-one\.js)\?[^"\s]+', r'\1?v=class-details-20260930', page)
+          page, n2 = re.subn(r'(parent-ui\.js)\?[^"\s]+', r'\1?v=class-details-20260930', page)
+          assert n1 == n2 == 1, 'Expected the two existing script references.'
+          index_path.write_text(page, encoding='utf-8')
+
+          test_path = Path('test_calendar.py')
+          test = test_path.read_text(encoding='utf-8')
+          test, count = re.subn(r'DOCUMENT_COUNT\s*=\s*31', 'DOCUMENT_COUNT = 29', test)
+          assert count == 1
+          test = test.replace('check_download(page, DOCUMENT_COUNT)', 'check_download(page, DOCUMENT_COUNT + 2)')
+          begin = test.index('        # School-confirmed representative sessions:')
+          finish = test.index("        page.screenshot(path='test-results/class-representatives.png'", begin)
+          block = '''        # One original card; all three confirmed times and rooms in View details.
+                  page.locator('#search').fill('class representatives')
+                  expect(page.locator('#events .card')).to_have_count(1)
+                  session_card = page.locator('#events .card')
+                  expect(session_card.get_by_role('heading', name='Class Representatives Welcome', exact=True)).to_be_visible()
+                  expect(session_card).not_to_contain_text('Time to be confirmed')
+                  sessions = [
+                      ('primary', 'Primary', '8:00–9:00 AM', 5, 'Girls Music Room, New Building, 2nd Floor'),
+                      ('gs', 'GS', '9:00–10:00 AM', 6, 'Girls Music Room, New Building, 2nd Floor'),
+                      ('bs', 'BS', '10:00–11:00 AM', 7, 'Boys Art Room, New Building, 2nd Floor'),
+                  ]
+                  for suffix, group, times, utc_hour, room in sessions:
+                      expect(session_card).to_contain_text(times)
+                  session_card.get_by_role('button', name='View details: Class Representatives Welcome').click()
+                  expect(page.locator('#event-dialog')).to_be_visible()
+                  for suffix, group, times, utc_hour, room in sessions:
+                      expect(page.locator('#event-body')).to_contain_text(times)
+                      expect(page.locator('#event-body')).to_contain_text(room)
+                  with page.expect_download() as one:
+                      page.get_by_role('button', name='Download this event (.ics)').click()
+                  exported = Calendar.from_ical(Path(one.value.path()).read_bytes()).walk('VEVENT')
+                  assert len(exported) == 3, 'The combined details download retains three separate session appointments.'
+                  by_session = {str(e['UID']): e for e in exported}
+                  for suffix, group, times, utc_hour, room in sessions:
+                      event = by_session['nun-document-class-reps-' + suffix + '@nunacademy.com']
+                      assert event.decoded('DTSTART').isoformat() == f'2026-10-01T{utc_hour:02d}:00:00+00:00'
+                      assert event.decoded('DTEND').hour == utc_hour + 1
+                      assert str(event['LOCATION']) == room
+                  page.screenshot(path='test-results/combined-class-representatives-details.png', full_page=True)
+                  page.set_viewport_size({'width': 390, 'height': 844})
+                  assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth + 1')
+                  expect(page.locator('#event-body')).to_contain_text('Boys Art Room, New Building, 2nd Floor')
+                  page.screenshot(path='test-results/mobile-combined-class-details.png', full_page=True)
+                  page.set_viewport_size({'width': 1440, 'height': 1000})
+                  page.keyboard.press('Escape')
+          '''
+          # The first line is already correctly indented; normalize the remaining block.
+          block_lines = block.splitlines()
+          block = block_lines[0] + '\n' + '\n'.join(line[10:] if line.startswith('          ') else line for line in block_lines[1:]) + '\n'
+          test = test[:begin] + block + test[finish:]
+          test = test.replace('all 31 school-published events; Primary, GS and BS cards', '29 school-published cards; one Class Representatives Welcome details panel; 31 downloadable appointments; Primary, GS and BS sessions')
+          compile(test, 'test_calendar.py', 'exec')
+          test_path.write_text(test, encoding='utf-8')
+          print('Prepared: one card, three sessions in its details, accurate downloads, and fresh script URLs.')
+          PY
+      - name: Install checks
+        run: |
+          python -m pip install 'icalendar==6.3.2' 'playwright==1.55.0'
+          python -m playwright install --with-deps chromium
+      - name: Verify details, exact rooms, search and downloads
+        run: python test_calendar.py
+      - name: Publish the tested edit
+        run: |
+          git config user.name 'Nün Calendar Update'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add semester-one.js parent-ui.js index.html test_calendar.py
+          if ! git diff --cached --quiet; then
+            git commit -m 'Show all class representative times and rooms inside one event details card'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+      - name: Keep the browser verification screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: class-representative-details-checks
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 3
