@@ -97,6 +97,13 @@
     .help { margin-top: 28px; border: 1px solid var(--border); padding: 17px 21px; border-radius: 12px; background: white; font-size: 14px; }
     .help summary { cursor: pointer; color: var(--navy); font-weight: 700; min-height: 28px; }
     .help p, .source-note { color: var(--muted); }
+    .changes-notice { margin-top: 28px; padding: 19px 21px; border-left: 3px solid var(--gold); border-radius: 0 10px 10px 0; background: white; color: var(--muted); }
+    .changes-notice h2 { font-size: 16px; margin: 0 0 6px; letter-spacing: 0; }
+    .changes-notice p { font-size: 14px; margin: 0; }
+    .changes-notice p.tiny { font-size: 12px; margin-top: 9px; }
+    .calendar-information { margin-top: 14px; }
+    .calendar-information > .sync-row { margin-top: 12px; }
+    .calendar-information > .notice { margin-bottom: 0; }
     footer { padding: 27px 0; background: var(--deep); color: #dee5ee; font-size: 12px; }
     footer .wrap { display: flex; gap: 20px; justify-content: space-between; flex-wrap: wrap; }
     footer a { color: #e9d0b5; }
@@ -154,8 +161,6 @@
     </div>
   </section>
   <main class="wrap">
-    <div class="sync-row"><span id="sync-status" role="status">Loading the school schedule…</span><button type="button" class="text-button" id="refresh">Refresh events ↻</button></div>
-    <div class="notice" id="feed-notice" role="status" hidden></div>
     <section aria-labelledby="upcoming-heading">
       <div class="section-head"><div><h2 id="upcoming-heading">Coming up next</h2><p>Upcoming and ongoing events at a glance.</p></div><a href="#browse">Browse all ↓</a></div>
       <div id="upcoming" class="cards"><div class="empty">Loading upcoming events…</div></div>
@@ -184,7 +189,16 @@
       <div class="buttons"><a id="apple-subscribe" class="button outline">Subscribe in Apple Calendar</a><button id="copy-feed" type="button" class="button outline">Copy subscription address</button></div>
       <p class="tiny" id="copy-status" role="status">Downloading a document-based event does not create or edit an event in the school’s master calendar.</p>
     </details>
-    <p class="tiny source-note" style="margin-top:24px">Dates and events are subject to change. Please check official Nün Academy communications for updates, invitations and individual meeting details.</p>
+    <section class="changes-notice" id="calendar-disclaimer" aria-labelledby="changes-heading">
+      <h2 id="changes-heading">Please note</h2>
+      <p>Event dates, times, locations and arrangements are subject to change. Any updates will be communicated through official Nün Academy channels. Please check the latest school communications before attending an event or making arrangements.</p>
+      <p class="tiny source-note">Downloaded calendar files are one-time copies and do not update automatically.</p>
+    </section>
+    <details class="help calendar-information" id="calendar-information">
+      <summary>Calendar information</summary>
+      <div class="sync-row"><span id="sync-status" role="status">Loading the school schedule…</span><button type="button" class="text-button" id="refresh">Refresh events ↻</button></div>
+      <div class="notice" id="feed-notice" role="status" hidden></div>
+    </details>
     <noscript><div class="notice">JavaScript is needed for search, event cards and downloads. Please open Google Calendar or contact the school for the latest schedule.</div></noscript>
   </main>
   <footer><div class="wrap"><span>Nün Academy · Kunskapsskolan, Jeddah</span><a href="https://www.nunacademy.com" target="_blank" rel="noopener">School website ↗</a></div></footer>
