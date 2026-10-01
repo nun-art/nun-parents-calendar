@@ -38,6 +38,13 @@ window.NUN_SEMESTER_ONE_DOCUMENT = {
     {id:'sports-primary',title:'Sports Day – EY–Y5',date:'2026-12-17',audience:'EY–Y5 students and parents',categories:['parents','students']},
     {id:'arabic-day',title:'Arabic Language Day Assembly',date:'2026-12-22',audience:'Students',categories:['students'],notes:'Early dismissal for students.\nHalf-day pickup schedule:\nEY: 12:00 PM\nY1–Y5: 12:30 PM\nY6–Y13: 1:00 PM',timeLabel:'School activity · early dismissal'},
     {id:'development-discussions',title:'Development Discussions',date:'2026-12-23',lastDate:'2026-12-24',audience:'Parents',categories:['parents'],notes:'No school for students on these days. Parents attend a scheduled meeting with their child’s teachers. Refer to your individual invitation for the appointment details.',timeLabel:'Individual scheduled meetings'},
-    {id:'winter-break',title:'Winter Break',date:'2026-12-24',lastDate:'2027-01-18',audience:'All students',categories:['holidays'],notes:'No school during Winter Break.',timeLabel:'No school · all day'}
+    {id:'winter-break',title:'Winter Break',date:'2026-12-24',lastDate:'2027-01-18',audience:'All students',categories:['holidays'],notes:'No school during Winter Break.',timeLabel:'No school · all day'},
+    {id:'ramadan-festival-half-day',title:'Ramadan Festival / Half Day for Students',date:'2027-02-04',audience:'Students',categories:['students','school'],status:'tentative',semester:'s2',notes:'Tentative. Half day for students.',timeLabel:'Half day · dismissal time to be confirmed'},
+    {id:'founding-day-holiday',title:'Founding Day Holiday',date:'2027-02-21',lastDate:'2027-02-22',audience:'All students',categories:['holidays'],semester:'s2',notes:'No school.',timeLabel:'No school · all day'},
+    {id:'ramadan-eid-holidays',title:'Ramadan and Eid Holidays',date:'2027-02-23',lastDate:'2027-03-13',audience:'All students',categories:['holidays'],semester:'s2',notes:'No school.',timeLabel:'No school · all day'},
+    {id:'development-discussions-s2',title:'Development Discussions (DDs)',date:'2027-04-14',lastDate:'2027-04-15',audience:'Parents',categories:['parents','holidays'],semester:'s2',notes:'No school for students. Parents attend scheduled Development Discussions.',timeLabel:'No school for students · scheduled parent meetings'},
+    {id:'eid-adha-holiday',title:'Eid Al-Adha Holiday',date:'2027-05-13',lastDate:'2027-05-22',audience:'All students',categories:['holidays'],semester:'s2',notes:'No school.',timeLabel:'No school · all day'},
+    {id:'last-day-students',title:'Last Day for Students',date:'2027-06-29',audience:'Students',categories:['students','school'],semester:'s2',notes:'Half day for students.',timeLabel:'Half day · dismissal time to be confirmed'},
+    {id:'last-day-staff',title:'Last Day for Staff',date:'2027-06-30',audience:'Staff',categories:['school'],semester:'s2',notes:'Last day for staff.',timeLabel:'School day · timing not specified'}
   ]
 };
