@@ -55,7 +55,7 @@ const documentEvents = ((window.NUN_SEMESTER_ONE_DOCUMENT || {}).events || []).m
   ...e, id: 'document-' + e.id, uid: 'nun-document-' + e.id + '@nunacademy.com',
   start: e.startTime ? e.date + 'T' + e.startTime + ':00+03:00' : e.date,
   end: e.endTime ? e.date + 'T' + e.endTime + ':00+03:00' : nextDay(e.lastDate || e.date),
-  allDay: !e.startTime, semester: 's1', status: e.status || 'confirmed',
+  allDay: !e.startTime, semester: e.semester || 's1', status: e.status || 'confirmed',
   description: e.notes || '', sourceKind: 'document'
 }));
 
