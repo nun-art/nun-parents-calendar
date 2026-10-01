@@ -37,6 +37,7 @@ window.NUN_SEMESTER_ONE_DOCUMENT = {
     {id:'reports',title:'Semester 1 Reports Published',date:'2026-12-14',categories:['school'],timeLabel:'Publication time not specified'},
     {id:'sports-primary',title:'Sports Day – EY–Y5',date:'2026-12-17',audience:'EY–Y5 students and parents',categories:['parents','students']},
     {id:'arabic-day',title:'Arabic Language Day Assembly',date:'2026-12-22',audience:'Students',categories:['students'],notes:'Early dismissal for students.\nHalf-day pickup schedule:\nEY: 12:00 PM\nY1–Y5: 12:30 PM\nY6–Y13: 1:00 PM',timeLabel:'School activity · early dismissal'},
-    {id:'development-discussions',title:'Development Discussions',date:'2026-12-23',lastDate:'2026-12-24',audience:'Parents',categories:['parents'],notes:'No school for students on these days. Parents attend a scheduled meeting with their child’s teachers. Refer to your individual invitation for the appointment details.',timeLabel:'Individual scheduled meetings'}
+    {id:'development-discussions',title:'Development Discussions',date:'2026-12-23',lastDate:'2026-12-24',audience:'Parents',categories:['parents'],notes:'No school for students on these days. Parents attend a scheduled meeting with their child’s teachers. Refer to your individual invitation for the appointment details.',timeLabel:'Individual scheduled meetings'},
+    {id:'winter-break',title:'Winter Break',date:'2026-12-24',lastDate:'2027-01-18',audience:'All students',categories:['holidays'],notes:'No school during Winter Break.',timeLabel:'No school · all day'}
   ]
 };
