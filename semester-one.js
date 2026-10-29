@@ -29,7 +29,7 @@ window.NUN_SEMESTER_ONE_DOCUMENT = {
     {id:'kindness',title:'Kindness Week / Anti-Bullying',date:'2026-11-08',lastDate:'2026-11-12',categories:['school']},
     {id:'girls-trip',title:'Mecca Trip – Girls Y7–Y13',date:'2026-11-12',audience:'Y7–Y13 girls',categories:['students'],status:'tentative',notes:'Tentative event. Timings and trip arrangements are not specified in the source document.'},
     {id:'coffee-morning',title:'Coffee Morning',date:'2026-11-18',audience:'Parents',categories:['parents'],notes:'Parents are invited to attend.'},
-    {id:'boys-trip',title:'Mecca Trip – Boys Y6–Y12',date:'2026-11-22',audience:'Y6–Y12 boys',categories:['students'],status:'tentative',notes:'Tentative event. Timings and trip arrangements are not specified in the source document.'},
+    {id:'boys-trip',title:'Mecca Trip – Boys Y7–Y13',date:'2026-11-22',audience:'Y7–Y13 boys',categories:['students'],status:'tentative',notes:'Tentative event. Timings and trip arrangements are not specified in the source document.'},
     {id:'examinations',title:'End of Semester Examinations',date:'2026-11-29',lastDate:'2026-12-03',audience:'Y6–Y13 students',categories:['students'],notes:'Early dismissal during the examination period. Individual examination and pickup times are not specified in this entry.',timeLabel:'Examination timetable · early dismissal'},
     {id:'volunteer-day',title:'World Volunteer Day',date:'2026-12-06',categories:['school']},
     {id:'athletics',title:'Athletics Day',date:'2026-12-10',audience:'Y6–Y13 students only',categories:['students']},
